@@ -6,25 +6,47 @@ const multer = require('multer');
 const path = require('path');
 const app = express();
 const dotenv = require('dotenv');
+const crypto = require('crypto');
 dotenv.config();
+
+// option 2
+// const storage = new Storage({
+//   projectId: process.env.GCP_project_id,
+//   credentials: {
+//     type: process.env.GCP_type,
+//     project_id: process.env.GCP_project_id,
+//     private_key_id: process.env.GCP_private_key_id,
+//     private_key: process.env.GCP_private_key,
+//     client_email: process.env.GCP_client_email,
+//     client_id: process.env.GCP_client_id,
+//     auth_uri: process.env.GCP_auth_uri,
+//     token_uri: process.env.GCP_token_uri,
+//     auth_provider_x509_cert_url: process.env.GCP_auth_provider_x509_cert_url,
+//     client_x509_cert_url: process.env.GCP_client_x509_cert_url,
+//     universe_domain: process.env.GCP_universe_domain
+//     }
+// });
+
+function decryptText(encryptedText, key) {
+  const decipher = crypto.createDecipher('aes-256-cbc', key);
+  let decrypted = decipher.update(encryptedText, 'base64', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+const key = process.env.ENCRYPTION_KEY;
+
+const encryptedText = process.env.ENCRYPTED_GCP_DATA;
+const decryptedText = decryptText(encryptedText, key);
+
+// convert string to json
+const jsonData = JSON.parse(decryptedText);
 
 const storage = new Storage({
   projectId: process.env.GCP_project_id,
-  credentials: {
-    type: process.env.GCP_type,
-    project_id: process.env.GCP_project_id,
-    private_key_id: process.env.GCP_private_key_id,
-    private_key: process.env.GCP_private_key,
-    client_email: process.env.GCP_client_email,
-    client_id: process.env.GCP_client_id,
-    auth_uri: process.env.GCP_auth_uri,
-    token_uri: process.env.GCP_token_uri,
-    auth_provider_x509_cert_url: process.env.GCP_auth_provider_x509_cert_url,
-    client_x509_cert_url: process.env.GCP_client_x509_cert_url,
-    universe_domain: process.env.GCP_universe_domain
-    }
+  credentials: jsonData
 });
-
+// console.log(process.env.ENCRYPTED_GCP_DATA)
 // Other possible option:
 // const storage = new Storage({
 //   keyFilename: 'path_to_your_service_account_key.json'
