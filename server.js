@@ -56,6 +56,12 @@ const bucket = storage.bucket(bucketName);
 
 const upload = multer({ dest: './uploads' });
 
+//TODO: add the Access-Control-Allow-Origin header in the response, specifying the origin(s) allowed to access the resource
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+})
+
 app.post('/upload', upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).send({error: 'No file uploaded.'});
